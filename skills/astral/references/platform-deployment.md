@@ -53,7 +53,8 @@ server 二进制均在镜像内构建，webdist 同源随镜像分发。标签�
 | 预发布 tag（含 `-`） | 仅完整版本号，不动 `latest` 与移动标签，标 prerelease |
 
 main 的 dev 镜像永不打 latest；GHCR 包默认 private，首次发布后手动改 visibility。
-非法 semver tag（`v1.2`、`v01.2.3`）在 validate 步骤被拦。发布操作是人类的活：
+两段式 tag（`v1.2`）不命中触发过滤（`v*.*.*`）压根不会跑 workflow；伪 semver
+（`v01.2.3` 之类）才在 validate 步骤被拦。发布操作是人类的活：
 
 ```bash
 git tag v1.2.3 && git push origin v1.2.3   # 全自动：镜像 + Release

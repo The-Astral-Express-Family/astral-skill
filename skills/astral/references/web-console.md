@@ -3,13 +3,13 @@
 > Web 与 API 同源部署（如 `https://astral.example.com`）。界面随版本演进，
 > 以实际页面为准；本文描述 v0.1.x 时代的既有能力。
 
-## 公开页
+## 登录、注册与设备审批
 
 | 路由 | 用途 |
 |---|---|
 | `/login` | 登录（email + password；human 会话 = cookie） |
 | `/register?code=<邀请码>` | 邀请码注册（匿名专属；已登录访问弹回总览）。注册成功即建会话 |
-| `/device` | **设备码审批页**：CLI `astral login` 会拉起这里，人工确认授权后 CLI 拿到 token 对 |
+| `/device`（登录态页） | **设备审批与设备管理**：CLI `astral login` 给出验证 URL，登录后在页内确认授权，CLI 拿到 token 对；未登录访问会先跳 `/login` |
 
 无 preview 端点（防爆破 oracle）：注册页不提供「码是否有效」的预检，码无效提交时统一
 `INVITE_INVALID`。
@@ -20,31 +20,35 @@
   （invite.redeemed 等）、`document.updated` 可见文档变更；
 - workspace 切换在导航内完成；账号零权限（无 membership）时一切资源 404。
 
-## 成员与邀请管理
+## 邀请与成员管理
 
-- 入口：workspace 成员管理（MembersView）；需 `workspace:manage_members`
+- 邀请的签发/列表/复制链接/撤销在工作区**总览页**（InvitationsCard）；成员列表、agent
+  创建与 credential 签发/撤销在**成员页（MembersView）**；均需 `workspace:manage_members`
   （owner/maintainer）；
-- 签发：选角色 `viewer` / `contributor` / `maintainer`（**无 owner**），TTL 默认 7 天、
+- 邀请签发：选角色 `viewer` / `contributor` / `maintainer`（**无 owner**），TTL 默认 7 天、
   上限 30 天；`code` 明文与 `invite_url` 只在签发响应出现一次，**当场复制分发**；
-- 列表：不回传 code；可复制的是 invite_url 展示（历史签发的链接重发由分发者自行保管）；
+- 邀请列表：只有角色/状态/时间/兑换者，**不回传 code 与 invite_url**（库里只有 hash）；
+  历史签发的链接重发由分发者自行保管；
 - 撤销：对已关闭（redeemed/revoked）的邀请重复撤销是幂等的；链接泄露的处置就是撤销；
 - 平台级邀请（平台 admin）：不绑 workspace，签发后账号为不入组的普通 user，
   后续经 workspace 邀请/addMember 进组。
 
 ## 任务与标签
 
-- 任务以**容器子任务树**呈现（协议 v2）：父任务下挂子任务；认领（claim）是原子租约操作，
-  完结需附结果摘要；
+- 任务以**容器子任务树**呈现（协议 v2）：父任务下挂子任务；认领（claim）是原子租约操作；
+  完结就是把 status 置为 done（服务端**没有**强制的结果摘要字段）——把结果写进任务描述
+  或线程是协作约定，不是服务端校验；
 - 标签字典支持交叉检索；创建/删除走两步确认（propose → confirm code），防 Agent 重复造标签；
-- 任务线程消息在任务详情页可见。
+- 任务线程消息在**消息页**的「任务线程」视角查看（不在任务详情面板里）。
 
 ## 受管文档
 
 - 文档列表展示远端 revision/hash；编辑器为 CodeMirror 6（自托管等宽字体）；
 - 编辑保存走与 CLI 相同的 CAS push（base_revision/base_hash）；冲突会显式落冲突工件，
   不静默覆盖；
-- **历史版本**：可查看文档版本链（TTL 30 天 + 每文档 50 版窗口），取回旧内容后重新保存
-  即恢复（同样过 CAS）。
+- **历史版本**：版本链（TTL 30 天 + 每文档 50 版窗口）截至当前版本**只有 CLI 入口**
+  （`astral document history` / `document get <path> --revision N`），Web 控制台暂无
+  版本链 UI；取回旧内容后重新保存即恢复（同样过 CAS）。
 
 ## Agent 管理
 
