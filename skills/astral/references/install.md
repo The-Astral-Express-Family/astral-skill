@@ -32,6 +32,8 @@ powershell -c "iwr -useb https://raw.githubusercontent.com/The-Astral-Express-Fa
   `astral update` 自更新**（见下）。
 - 依赖仅 curl/tar/sha256sum（POSIX）或系统 PowerShell cmdlet（Windows）；代理自动识别
   `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` / `ALL_PROXY`（含小写），Windows 版遵循系统代理。
+- 默认「latest」走 GitHub API：代理出口 IP 被限流（`API rate limit exceeded`）时脚本会失败；
+  用 `ASTRAL_VERSION=v0.1.1-alpha.5` 钉版本（走 release 下载而非 API）即可绕开。
 
 ## 更新（astral update）
 

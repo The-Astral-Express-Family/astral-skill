@@ -8,6 +8,8 @@
 | 症状 | 原因 | 处置 |
 |---|---|---|
 | exit 3（401 鉴权失败，刷新后仍失败） | 会话过期/被撤销；web cookie 与 CLI 凭证是**不同通道** | 重新 `astral login`；CI 用 `ASTRAL_TOKEN`（优先级最高、不落盘）；agent 用其 credential secret |
+| `whoami` 返回了别人/旧身份 | `whoami` 读凭证文件会话、**忽略 `ASTRAL_TOKEN`**，且 server 不吃 `.astral/` 绑定（要位置参数/`--server`/`ASTRAL_SERVER`） | 验证 `ASTRAL_TOKEN` 身份用业务命令（`todo list --json` 等）；`whoami` 记得显式给 server |
+| 二次 `--bootstrap` 注册被拒（registration closed） | 已有首个 human，HTTP 层 403 | 用邀请码注册；注意此时 CLI 退出码是 **1**（一般失败），不是 3 |
 | exit 2 执行 `document push` | 本地拦截门：缺省覆盖非空且不同的远端 | 先 `document get` 对齐；或显式 base；或确有授权 `--force`（见 documents-sync.md） |
 | exit 2 其他 | CLI 用法错误 | 看 stderr 提示与 `--help` |
 | exit 4 | 资源不存在（账号零权限时资源也 404） | 确认 workspace 绑定与成员身份 |
@@ -33,7 +35,8 @@
 
 | 症状 | 处置 |
 |---|---|
-| 无浏览器/SSH 环境 `astral login` | 设备流会给出验证 URL，在任意有浏览器的机器打开 `/device` 审批；自动化测试用 `ASTRAL_NO_BROWSER` 关闭自动唤起 |
+| 一键安装脚本报 `API rate limit exceeded` | 默认 latest 走 GitHub API，代理出口 IP 被限流；`ASTRAL_VERSION=v0.1.1-alpha.5` 钉版本走 release 下载绕开 |
+| 无浏览器/SSH 环境 `astral login` | 设备流会给出验证 URL，在任意有浏览器的机器打开 `/device` 审批（该页需先登录 web）；自动化测试用 `ASTRAL_NO_BROWSER` 关闭自动唤起 |
 | Windows 装完找不到 `astral` | 安装器追加的是用户 PATH，**重开终端**生效 |
 | 颜色乱码 | `NO_COLOR=1` |
 | 本机已有 PostgreSQL 占 5432 | 开发 compose 映射 **5433**；DSN 用 `localhost:5433` |

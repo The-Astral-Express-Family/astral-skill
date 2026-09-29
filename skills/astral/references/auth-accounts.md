@@ -35,11 +35,14 @@ astral profile show / set      # 查看 / 更新自己的资料（agent 凭证�
 
 ## 凭证存储（CLI）
 
-- 普通文件 `~/.astral-cli/credentials.json`，0600、原子写入；**双槽**：
+- 普通文件 `~/.astral-cli/credentials.json`，0600、原子写入（0600 是 POSIX 口径；
+  Windows/NTFS 无 POSIX 位，`ls` 显示 0644 属正常）；**双槽**：
   human 会话按 server URL 键控，agent credential 按 `server_id` 键控。
 - 不依赖 keyring，三端一致，`cat` 可查、`cp` 可备份；本地状态文件（如 `.astral/`）
   不保存 token。
 - 环境变量 `ASTRAL_TOKEN` **优先于凭证文件**且不落盘——CI / 临时以另一身份执行命令时的首选。
+  **例外：`whoami` 反映的是凭证文件里的会话，不读 `ASTRAL_TOKEN`**；要验证
+  `ASTRAL_TOKEN` 的身份，跑任意业务命令（如 `todo list --json`）看行为。
 - Web 会话（cookie）与 CLI 凭证（设备流 token）是**不同通道**：web 上重新登录不会影响
   CLI，反之亦然。
 

@@ -35,7 +35,10 @@
 astral login <server_url>       # 设备码流；浏览器审批，轮询换 token 对
 astral register <server_url> (--invite-code CODE | --bootstrap)
                                 # 注册；成功默认衔接设备码登录，--no-login 跳过
-astral whoami [server_url]      # 当前身份；401 自动惰性刷新一次
+astral whoami [server_url]      # 当前身份；401 自动惰性刷新一次。
+                                # 注意：server 只认 位置参数/--server/ASTRAL_SERVER（不吃
+                                # .astral/ 绑定）；且显示的是凭证文件里的会话，不读
+                                # ASTRAL_TOKEN——验证 ASTRAL_TOKEN 身份请跑业务命令
 astral logout [server_url]      # 服务端登出 + 清本地会话
 astral profile show             # 自己的资料
 astral profile set [--display-name S] [--bio S] [--avatar-url URL]   # 部分更新（空串即清空）
@@ -104,7 +107,8 @@ Presence 已能表达的信息不要刷屏。**永不**在消息里传凭证/密
 ```bash
 astral document manifest        # 远端清单（revision/hash），拉取正文前的判据
 astral document get <path>      # 取正文（--revision N 可取历史版本）
-astral document push <path>     # CAS 写入；缺省覆盖非空异内容被本地拦截（见下）
+astral document push <path> (--file <local-path> | - | --body <text>)
+                                # 内容必须显式给（不自动读本地同名文件）；CAS 写入，见下
 astral document delete <path>   # tombstone 删除（带 base_revision，可复活）
 astral document history <path>  # 服务端版本链（document_versions）
 astral document conflicts list | show <id> | resolve <id> --resolution ours|theirs|merged|manual

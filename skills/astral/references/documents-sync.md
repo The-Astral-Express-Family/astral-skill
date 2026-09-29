@@ -30,9 +30,9 @@ hash 为 `sha256:<hex>`，对实际 UTF-8 bytes 计算，**不自动改写换行
 ## push 的两道门
 
 1. **本地拦截门（CLI，5c32909 起）**：缺省 push 覆盖「非空且内容不同」的远端时，
-   本地直接拦截（退出码 2），提示三条豁免路径：
-   先 `document get` 对齐远端；用显式 base（pinned base，flag 写法以
-   `astral document push --help` 为准）；或确有授权时 `--force`。
+   本地直接拦截（退出码 2）。CLI 文案列三条豁免（`--force` / pinned base / 先 get），
+   但实测 **get 后裸 push 仍被拦**——get 的价值是拿到当前 revision/hash，随后显式
+   `--base-revision <n> --base-hash sha256:...` 传入才是真豁免；确有授权直接 `--force`。
    显式 base、同内容、空远端不拦。
 2. **服务端 CAS**：push 带 `base_revision` + `base_hash`；服务端校验权限/路径/hash 后
    比对当前 revision——不一致返回 **409 `DOCUMENT_CONFLICT`** 并落冲突工件
@@ -72,8 +72,8 @@ astral document conflicts resolve <id> --resolution ours|theirs|merged|manual
 ```bash
 astral document manifest --json     # 1. 拉远端清单
 # 2. 与本地逐路径分类（无变/仅本地/仅远端/双边）
-astral document get <path>          # 3. 仅远端变的拉回
-astral document push <path>         # 4. 仅本地变的推上去
+astral document get <path>                    # 3. 仅远端变的拉回
+astral document push <path> --file <path>     # 4. 仅本地变的推上去（内容必须显式给）
 # 5. 双边变的：本地合并 → push（新 base）；无法安全合并 → conflicts 流程
 ```
 

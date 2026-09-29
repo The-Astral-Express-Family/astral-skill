@@ -24,7 +24,7 @@ astral login https://astral.example.com                                         
 astral init https://astral.example.com/my-ws .
 
 # 4. 日常
-astral whoami --json            # 确认身份
+astral whoami https://astral.example.com --json  # 确认身份（whoami 要显式 server，不吃 .astral/ 绑定）
 astral todo list --json         # 看任务
 astral document manifest --json # 看受管文档
 astral event listen             # 订阅事件（SSE → JSON Lines）
@@ -47,8 +47,10 @@ astral doctor                   # 本地体检 + 服务端连通性
 - 机器调用一律加 `--json`：stdout 是数据、stderr 是诊断，不解析人类表格输出。
 - 退出码语义固定（0–10），业务细节看结构化 `error.code`，不要自创退出码。
 - Presence 不是所有权，**Task 租约才是**；不偷、不强制释放他人的任务。
-- `document push` 缺省覆盖非空异内容会被本地拦截（exit 2）：先 `get`、用显式 base，
-  或确有授权再 `--force`；服务端还会再做一次 CAS（409 → 冲突工件）。
+- `document push` 内容必须显式给（`--file <path>` / `--body <text>`，不自动读本地同名文件）；
+  缺省覆盖非空异内容被本地拦截（exit 2）：get 拿到当前 revision/hash 后显式传
+  `--base-revision/--base-hash`，或确有授权再 `--force`；服务端还会再做一次 CAS
+  （409 → 冲突工件）。
 - 秘密永不进消息、任务文本、文档、日志；token 用 `ASTRAL_TOKEN` 或凭证文件，不落仓库。
 - 人的暂停 / 撤销 / 改派指令优先于一切 Agent 协调。
 - 版本口径：本技能描述的是 astral-cli v0.1.x（协议快照 v2.x）的实际行为；对不上时以
