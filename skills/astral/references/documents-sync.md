@@ -10,8 +10,9 @@
 Git 管源码版本；不自动执行 git add/commit/push。
 
 include/exclude 是**客户端约定**（`.astral/` 配置持有，服务端不解析）；服务端侧防线是
-保留前缀黑名单（`.git/`、`.astral/`、`secrets/`、`.env*` 等）+ push 时大小写冲突检测。
-绝对路径、`..`、NUL、symlink 逃逸一律拒绝。
+保留前缀黑名单（`.git/`、`.astral/`、`secrets/` 目录前缀 + `.env` 文件名前缀）+ push 时
+大小写冲突检测。绝对路径、`..`、NUL/控制字符、反斜杠、空段、超长路径一律拒绝；
+symlink 逃逸在 spec 要求清单里但截至 v0.1.x 两端均无实现——不要依赖，也别把它当防线。
 
 ## 三方模型
 
