@@ -42,7 +42,7 @@ hash 为 `sha256:<hex>`，对实际 UTF-8 bytes 计算，**不自动改写换行
 ```bash
 astral document conflicts list
 astral document conflicts show <id>     # 对比双方
-astral document conflicts resolve <id> ours|theirs|merged|manual
+astral document conflicts resolve <id> --resolution ours|theirs|merged|manual
 ```
 
 - 四种解决：保留本地（ours）/ 接受远端（theirs）/ 提交合并结果（merged）/ 手工（manual）。

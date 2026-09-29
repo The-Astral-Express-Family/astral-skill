@@ -37,7 +37,7 @@
 | Windows 装完找不到 `astral` | 安装器追加的是用户 PATH，**重开终端**生效 |
 | 颜色乱码 | `NO_COLOR=1` |
 | 本机已有 PostgreSQL 占 5432 | 开发 compose 映射 **5433**；DSN 用 `localhost:5433` |
-| 误继承别的项目的 workspace 绑定 | workspace 解析优先级 flag > `.astral/` 绑定 > env > 用户默认；用 flag 显式指定或重新 `astral init` |
+| 误继承别的项目的 workspace 绑定 | workspace 解析优先级 flag > `.astral/` 绑定 > env（三层全缺失即报错）；用 flag 显式指定或重新 `astral init` |
 | `document push` 想恢复旧版本 | 无恢复写端点：`document get <path> --revision N` 取回旧内容再 push（过 CAS），历史窗口 TTL 30 天/50 版 |
 | `astral agent` 命令不存在 | v0.1.x 未实装，签发/撤销走 Web MembersView；升级后先 `--help` 确认 |
 | 端到端不对劲 | 先 `astral doctor --json`；服务端侧看 `/healthz`（进程）与 `/readyz`（数据库）分离判断 |

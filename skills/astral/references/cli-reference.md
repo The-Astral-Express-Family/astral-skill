@@ -38,7 +38,7 @@ astral register <server_url> (--invite-code CODE | --bootstrap)
 astral whoami [server_url]      # 当前身份；401 自动惰性刷新一次
 astral logout [server_url]      # 服务端登出 + 清本地会话
 astral profile show             # 自己的资料
-astral profile set <fields>     # 更新资料（PATCH /auth/me）
+astral profile set [--display-name S] [--bio S] [--avatar-url URL]   # 部分更新（空串即清空）
 ```
 
 ## 工作区绑定
@@ -48,43 +48,52 @@ astral init <url>[/<ws>] [path] [--create] [--rebind]
 ```
 
 - 在项目根执行，写入 `.astral/config.json` 绑定；`--create` 可创建新 workspace；
-  `--rebind` 换绑。
+  `--rebind` 换绑；`--workspace/-w` 可在命令行直接指定。
 - URL 简写 `<url>/<ws>` 直接指向 workspace。
-- 后续命令的 workspace 解析优先级：**命令行 flag > 仓库绑定（.astral/）> 环境变量 >
-  用户级默认**。多项目机器注意别误继承别的项目的绑定。
+- 后续命令的 workspace 解析优先级：**命令行 flag > 仓库绑定（.astral/）> 环境变量**，
+  三层全缺失即报错。多项目机器注意别误继承别的项目的绑定。
 
 ## 任务（todo，协议 v2 容器子任务树）
 
 ```bash
-astral todo list                # 平面查询（支持检索；--json 机器可读）
-astral todo add <title>         # 创建任务
-astral todo show <id>           # 详情（含子任务/租约/revision）
-astral todo claim <id>          # 原子认领，获得租约
-astral todo done <id> --summary <text>   # 附结果摘要完结
-astral todo search <query>      # 检索
+astral todo list [--parent <task-id>] [--assignee <actor-id>] [--tag <name>]
+                                 # 列容器直接子层（默认 workspace 根层，--parent 切容器）
+astral todo add <title> [--parent <task-id>] [--priority P] [--description <text>]
+                 [--tag <name>]...   # 创建即投进容器；无 --parent 落 workspace 根层
+astral todo show <task-id>       # 详情（含 tags 与 lease）
+astral todo claim <task-id> [--revision N] [--lease-seconds 30..3600]   # 原子认领，获得租约（默认 300s）
+astral todo update <task-id> [--title T] [--description D] [--status S]
+                     [--priority P] [--assignee <actor-id>|'-'] [--revision N]   # 乐观并发改字段
+astral todo lease renew <task-id>    # 续租（仅 holder）
+astral todo lease release <task-id>  # 主动让出租约
+astral todo tag attach|detach <task-id> <tag>   # 挂/摘标签（幂等）
+astral todo done <task-id> [--revision N]    # 完结（乐观并发）
+astral todo search [--regex <re>] [--fuzzy <text>] [--tag <name>] [--assignee <id>]
+                                 # 平面全 workspace 查询，至少给一个条件
 ```
 
 - **认领是排他租约**：失败即他人持有，不要重试抢，除非人明确授权接管。
 - 认领前先读任务详情与相关消息；`show` 里的 revision/租约状态是判断依据。
-- 消息线程可挂到 `task:<id>`（见 msg）。
+- 完结没有 summary 参数：结果摘要先经 `todo update --description` 写进任务，
+  或 `msg send task:<task-id> ...` 留在线程里，再 done。
 
 ## 标签（tags，两步确认防重复创建）
 
 ```bash
 astral tags list
-astral tags create <name>            # propose：服务端 pending + 生成确认码
-astral tags create <name> --confirm <code>   # 三思后确认才真正创建
+astral tags create <name>                     # propose：服务端 pending + 生成确认码
+astral tags create <name> --proposal <id> --confirm <code>   # 三思后配对确认才真正创建
 astral tags rename <old> <new>
-astral tags delete <name>            # 同样走两步确认
+astral tags delete <name>                     # 同样走两步确认
 ```
 
 ## 消息（msg）
 
 ```bash
-astral msg send --workspace <message>    # 工作区广播
-astral msg send actor:<id> <message>     # 定点私信
-astral msg send task:<id> <message>      # 任务线程
-astral msg list [scope]                  # 列出消息/线程
+astral msg send workspace <message>      # 广播到绑定的工作区
+astral msg send actor:<actor_id> <message>   # 定点私信
+astral msg send task:<task_id> <message>     # 投进任务线程（--thread <message-id> 可回楼）
+astral msg list [--task <task_id>] [--thread <message-id>]   # 列消息/线程
 ```
 
 消息结构建议：`上下文 → 变更/结果 → 请求的下一步`。只在会改变对方下一步行动时发消息；
@@ -98,7 +107,7 @@ astral document get <path>      # 取正文（--revision N 可取历史版本）
 astral document push <path>     # CAS 写入；缺省覆盖非空异内容被本地拦截（见下）
 astral document delete <path>   # tombstone 删除（带 base_revision，可复活）
 astral document history <path>  # 服务端版本链（document_versions）
-astral document conflicts list | show <id> | resolve <id> <resolution>
+astral document conflicts list | show <id> | resolve <id> --resolution ours|theirs|merged|manual
 ```
 
 - 读写语义、`--force` 门、冲突四选一（ours/theirs/merged/manual）、历史保留窗口等
@@ -126,7 +135,8 @@ astral update [--check] [ver]   # 自更新（仅约定安装位置，见 instal
 
 ## 未实装 / 桩（截至 v0.1.x）
 
-- `astral agent ...`（agent 凭证签发/撤销）——服务端契约已就绪，CLI 侧待实施；
+- `astral agent ...`（agent 凭证签发/撤销）与 `astral status ...`（Presence）——
+  registry 中为桩（StubbedNounCommand），调了只回桩响应；agent credential 的签发/撤销
   当前走 Web 控制台 MembersView。
-- 早期设计稿里的 `astral workspace sync/list/create`、`astral document diff/resolve`
-  独立合并引擎等**合并命令未实装**——同步以 manifest/get/push 的显式组合为准。
+- 早期设计稿里的 `astral workspace sync/list/create`、`astral document diff`
+  等合并命令未实装——同步以 manifest/get/push 的显式组合为准。

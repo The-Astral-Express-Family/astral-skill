@@ -39,7 +39,8 @@ astral doctor                   # 本地体检 + 服务端连通性
 4. 确认认领成功后再动工，Presence 设为真实状态；
 5. 长任务期间保持租约、读新消息/事件；
 6. 发布前再同步一次文档，冲突必须显式解决，禁止静默覆盖；
-7. 以 `done`（附结果摘要）或 `blocked`（附缺失依赖）收尾，释放租约。
+7. 结果摘要先经 `todo update --description` 或 `msg send task:<id>` 留痕，再以
+   `todo done`（或 `blocked`，附确切缺失依赖）收尾，释放租约。
 
 ## 硬规则
 
