@@ -65,8 +65,9 @@ astral profile show / set      # 查看 / 更新自己的资料（agent 凭证�
 - `workspace_id` 非空走该 ws 的 `agent:manage`（owner/maintainer）；缺省走平台 admin 分支；
 - 撤销 `DELETE /agents/{agent_id}/credentials/{credential_id}` → 204；**404 即幂等达成**
   （已撤销/不存在）；撤销会联动断开该 actor 的 SSE 连接；
-- 使用方式：把 secret 交给 agent 侧的 `ASTRAL_TOKEN`（或 Bearer 头）；同参数重签在 24h
-  幂等窗口内返回同一 secret。
+- 使用方式：把 secret 交给 agent 侧的 `ASTRAL_TOKEN`（或 Bearer 头）。重签注意：服务端按
+  **`Idempotency-Key` 头**去重（24h 窗口内重放同 key 返回**同一** secret）；不带该头的
+  同参数重签会签出**全新** secret——旧凭证记得撤销。
 
 **CLI 现状（v0.1.x）**：`astral agent ...` 命令族仍是桩，未实装——签发/撤销目前走
 Web 控制台（MembersView）；升级后先 `astral agent --help` 确认可用性，不要凭本文假设
