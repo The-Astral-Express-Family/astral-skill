@@ -19,14 +19,14 @@ docs/（registration / deployment / sync-semantics / architecture 等）。
 
 ```bash
 # 全局安装（用户级，所有项目可用）
-npx skills add <owner>/astral-skill -g
+npx skills add The-Astral-Express-Family/astral-skill -g
 
 # 项目级安装（写 skills-lock.json，装进项目）
-npx skills add <owner>/astral-skill
+npx skills add The-Astral-Express-Family/astral-skill
 ```
 
-- 仓库发布到 GitHub 后，`<owner>/astral-skill` 即为可安装的包名；未发布前可在本仓库
-  根目录直接用本地路径安装：`npx skills add . -g`。
+- 仓库已发布到 GitHub 组织（与 astral-cli / astral-modulator 同家族）；离线场景可在
+  本仓库根目录用本地路径安装：`npx skills add . -g`。
 - 默认把 skill 存到 canonical 目录（全局 `~/.agents/skills/astral`，项目级
   `.agents/skills/astral`），并 symlink/junction 到检测到的各 agent 目录
   （Claude Code、Codex、Cursor、ZCode、OpenCode 等）；`--copy` 改为复制。
@@ -34,7 +34,7 @@ npx skills add <owner>/astral-skill
 
 ```bash
 npx skills add -l <repo>      # 只列出仓库里可装的 skill，不安装
-npx skills add <repo> -g -a zcode   # 只装给指定 agent（'*' 为全部检测到的）
+npx skills add <repo> -g -a pi      # 只装给指定 agent（'*' 为全部检测到的）
 npx skills ls -g              # 查看已装 skill 及其 agent 覆盖
 npx skills update -g          # 更新到最新版
 npx skills remove -g          # 卸载（交互选择）
