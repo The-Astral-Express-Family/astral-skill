@@ -1,8 +1,8 @@
 # astral-skill
 
-Astral 的 Agent 技能包：一个面向 AI coding agent（ZCode / Claude 等）的 `astral` skill，
-教 agent 如何**安装与使用 astral-cli**、**接入 Astral 协作平台（astral-modulator）**，
-以及**自托管部署**平台。
+Astral 的 Agent 技能包：一个面向 AI coding agent（ZCode / Claude Code / Cursor 等）的
+`astral` skill，教 agent 如何**安装与使用 astral-cli**、**接入 Astral 协作平台
+（astral-modulator）**，以及**自托管部署**平台。
 
 内容来源：astral-cli v0.1.x（协议快照 v2.x）的实装行为与 astral-modulator 的
 docs/（registration / deployment / sync-semantics / architecture 等）。
@@ -15,43 +15,36 @@ docs/（registration / deployment / sync-semantics / architecture 等）。
 
 ## 安装
 
-### skill.sh（推荐）
-
-需要 bash（Linux / macOS 自带；Windows 用 Git Bash）。在仓库根执行：
+通过 [skills.sh](https://skills.sh) 生态的 skills CLI 安装（需 Node.js）：
 
 ```bash
-./skill.sh                  # 全局安装：~/.agents/skills/astral 与 ~/.zcode/skills/astral
+# 全局安装（用户级，所有项目可用）
+npx skills add <owner>/astral-skill -g
+
+# 项目级安装（写 skills-lock.json，装进项目）
+npx skills add <owner>/astral-skill
 ```
 
-全部命令与选项：
+- 仓库发布到 GitHub 后，`<owner>/astral-skill` 即为可安装的包名；未发布前可在本仓库
+  根目录直接用本地路径安装：`npx skills add . -g`。
+- 默认把 skill 存到 canonical 目录（全局 `~/.agents/skills/astral`，项目级
+  `.agents/skills/astral`），并 symlink/junction 到检测到的各 agent 目录
+  （Claude Code、Codex、Cursor、ZCode、OpenCode 等）；`--copy` 改为复制。
+- 常用操作：
 
 ```bash
-./skill.sh install          # 同上，全局安装（默认命令，可省略 install）
-./skill.sh install --local  # 安装到当前项目 .agents/skills/astral（随项目入库）
-./skill.sh --agents-only    # 只装 ~/.agents/skills/
-./skill.sh --zcode-only     # 只装 ~/.zcode/skills/
-./skill.sh --dir /some/root # 装到 <root>/astral
-./skill.sh uninstall        # 从对应范围移除（选项同 install）
-./skill.sh list             # 列出 skill 内容与默认安装目标
-./skill.sh --help
-```
-
-重复执行即覆盖更新（先 `git pull` 本仓库再重跑一遍即可升级）。
-
-### 手动安装
-
-不想跑脚本的话，把 `skills/astral/` 整个目录拷到任一技能目录并保持目录名 `astral`：
-
-```bash
-mkdir -p ~/.agents/skills
-cp -r skills/astral ~/.agents/skills/astral
+npx skills add -l <repo>      # 只列出仓库里可装的 skill，不安装
+npx skills add <repo> -g -a zcode   # 只装给指定 agent（'*' 为全部检测到的）
+npx skills ls -g              # 查看已装 skill 及其 agent 覆盖
+npx skills update -g          # 更新到最新版
+npx skills remove -g          # 卸载（交互选择）
 ```
 
 ### 验证
 
 ```bash
-ls ~/.agents/skills/astral          # 应看到 SKILL.md、references/、agents/
-ls ~/.zcode/skills/astral
+npx skills ls -g                  # 应列出 astral，Agents 一行含 ZCode
+ls ~/.agents/skills/astral        # canonical 真身：SKILL.md、references/、agents/
 ```
 
 新开一个 agent 会话，skill 列表里应出现 `astral`；让它回答「怎么用 astral-cli 登录」
