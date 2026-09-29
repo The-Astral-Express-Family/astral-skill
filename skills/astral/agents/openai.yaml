@@ -1,0 +1,3 @@
+interface:
+  display_name: "Astral"
+  short_description: "Install and drive astral-cli, join the Astral collaboration platform, sync managed docs, and self-host the server."
